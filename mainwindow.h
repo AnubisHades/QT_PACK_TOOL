@@ -41,6 +41,12 @@ public:
 
     int PackFlg = 0;
 
+    //path为ini配置文件路径，info为写入内容，dst_name为取出结果
+    QString CfgIniPath;
+    void write_ini(QString section , QString node , QString info );//写ini
+    void read_ini(QString section , QString node , QString &dst_name );//读ini
+
+
 private:
     Ui::MainWindow *ui;
     QProcess *process;

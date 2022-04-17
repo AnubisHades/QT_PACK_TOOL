@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QShortcut>
-
+#include <QSettings>
 #include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -14,6 +14,40 @@ MainWindow::MainWindow(QWidget *parent) :
     /* 新建process */
     process = new QProcess(this);
     process->setProcessChannelMode(QProcess::MergedChannels);
+
+    CfgIniPath = QCoreApplication::applicationDirPath()+"/config.ini";
+
+    QString str1,str2;
+    read_ini("Env",
+             "Env1",
+             str1);
+    read_ini("Env",
+             "Env2",
+             str2);
+
+    if (str1.isEmpty() || str2.isEmpty()) {
+        str1 = "D:\\Qt\\Qt5.12.7\\5.12.7\\mingw73_32\\bin";
+        str2 = "D:/Qt/Qt5.12.7/Tools/mingw730_32\bin";
+        write_ini("Env",
+                  "Env1",
+                  str1);
+        write_ini("Env",
+                  "Env2",
+                  str2);
+    }
+
+    {
+        str1.replace("/", "\\");
+        if (str1.contains("\\",Qt::CaseSensitive) == false) {
+            str1 = "D:\\Qt\\Qt5.12.7\\5.12.7\\mingw73_32\\bin";
+            write_ini("Env",
+                      "Env1",
+                      str1);
+        }
+        ui->lineEdit_EnvPath1->setText(str1);
+        ui->lineEdit_EnvPath2->setText(str2);
+    }
+
 
 
     /* 按键相关 */
@@ -176,6 +210,7 @@ void MainWindow::on_pushButton_Pack_clicked()
 {
     PackFlg= 0;
     if (ui->lineEdit_FilePath->text().isEmpty()) {
+        ui->textEdit->append("文件为路径为空，请打开对应文件");
         qDebug()<<"文件为空";
         return;
     }
@@ -203,11 +238,35 @@ void MainWindow::PackWorking()
     QFileInfo FileIno(NewFilePath);
     QString Name = FileIno.fileName();//获取文件路径
 
-    ui->textEdit->append("打包中请等待");
+    ui->textEdit->append("打包中请等待 请勿关闭，执行完成后会输出相关打包结果");
+//    ui->textEdit->append("PackFlg");
 
     QString PackCmd;
     PackCmd = "windeployqt.exe "+Name;
     CmdWrite(PackCmd);
 
     PackFlg = 0;
+}
+void MainWindow::write_ini(QString section, QString node, QString info)
+{
+    QSettings iniwrite(CfgIniPath,QSettings::IniFormat);
+    QString str;
+    str.clear();
+    str.append("/");
+    str.append(section);
+    str.append("/");
+    str.append(node);
+    iniwrite.setValue(str,info);
+}
+
+void MainWindow::read_ini(QString section, QString node, QString &dst_name)
+{
+    QSettings iniread(CfgIniPath,QSettings::IniFormat);
+    QString str;
+    str.clear();
+    str.append("/");
+    str.append(section);
+    str.append("/");
+    str.append(node);
+    dst_name = iniread.value(str).toString();
 }

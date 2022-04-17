@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>D:\Qt\Qt5.12.7\5.12.7\mingw73_32\bin</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_EnvPath2">
@@ -50,20 +50,20 @@
      </rect>
     </property>
     <property name="text">
-     <string>D:/Qt/Qt5.12.7/Tools/mingw730_32\bin</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>290</y>
+      <y>300</y>
       <width>91</width>
-      <height>41</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>设置环境路径</string>
+     <string>环境路径:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_FilePath">
@@ -89,7 +89,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>打包文件路径</string>
+     <string>打包文件路径:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Pack">
@@ -103,6 +103,20 @@
     </property>
     <property name="text">
      <string>打包</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>5</x>
+      <y>315</y>
+      <width>101</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>环境变量1需要
+用\做路径分隔</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Clear">
