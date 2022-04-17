@@ -39,25 +39,26 @@ public:
     QString       NewFilePath;
     QProcess    CMD;
 
+    int PackFlg = 0;
+
 private:
     Ui::MainWindow *ui;
     QProcess *process;
     QShortcut *key;
 
-
+signals:
+    void SetPkWorking();
+    void SetPackEnv();
 public slots:
-    void write_cmd();
     void read_data();
     void finished_process();
     void error_process();
 
+    void PackWorking();
+    void PackSetEnv();
 private slots:
-    void on_pushButton_2_clicked();
 
-    void on_lineEdit_2_textEdited(const QString &arg1);
-    void on_lineEdit_2_textChanged(const QString &arg1);
 
-    void on_pushButton_PackFile_clicked();
     void on_pushButton_OpenFile_clicked();
     void on_pushButton_Pack_clicked();
 };
