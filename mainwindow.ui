@@ -119,6 +119,19 @@
 用\做路径分隔</string>
     </property>
    </widget>
+   <widget class="QRadioButton" name="radioButton">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>240</y>
+      <width>151</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>选择文件后自动打包</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="pushButton_Clear">
     <property name="enabled">
      <bool>true</bool>

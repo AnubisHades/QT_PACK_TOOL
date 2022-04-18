@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = test3
+TARGET = PackTool
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -32,3 +32,8 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+
+RESOURCES += \
+    resource.qrc
+
+RC_ICONS = APP.ico

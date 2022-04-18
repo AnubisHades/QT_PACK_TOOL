@@ -10,13 +10,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    setWindowIcon(QIcon("APP.ico"));//设置应用程序图标
     /* 新建process */
     process = new QProcess(this);
     process->setProcessChannelMode(QProcess::MergedChannels);
 
     CfgIniPath = QCoreApplication::applicationDirPath()+"/config.ini";
 
+    //读取环境变量
     QString str1,str2;
     read_ini("Env",
              "Env1",
@@ -25,7 +26,38 @@ MainWindow::MainWindow(QWidget *parent) :
              "Env2",
              str2);
 
+    read_ini("Config",
+              "Lastpath",
+              OpenLastPath);
+    read_ini("Config",
+              "AutoPack",
+              AutoPackFlg);
+
+    qDebug()<<"AutoPackFlg"<<AutoPackFlg;
+    //自动打包时，关闭打包按钮
+    if (AutoPackFlg.compare("0")==0) {
+        ui->pushButton_Pack->setEnabled(true);
+    }else if (AutoPackFlg.compare("1")==0){
+        ui->pushButton_Pack->setEnabled(false);
+    }else{
+        AutoPackFlg = "0";
+        ui->pushButton_Pack->setEnabled(true);
+    }
+
+    if (OpenLastPath.isEmpty()) {
+        OpenLastPath = "D:/";
+    }
+
+    //
     if (str1.isEmpty() || str2.isEmpty()) {
+        //记录为空时初始化
+        write_ini("Config",
+                  "Lastpath",
+                  OpenLastPath);
+        write_ini("Config",
+                  "AutoPack",
+                  "0");
+
         str1 = "D:\\Qt\\Qt5.12.7\\5.12.7\\mingw73_32\\bin";
         str2 = "D:/Qt/Qt5.12.7/Tools/mingw730_32\bin";
         write_ini("Env",
@@ -34,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
         write_ini("Env",
                   "Env2",
                   str2);
+
     }
 
     {
@@ -105,8 +138,10 @@ void MainWindow::read_data()
     /* 信息输出 */
     qDebug() << "Success:read_data:" << msg << endl;
     if (PackFlg == 1) {
+        ui->textEdit->append("设置环境变量");
         emit SetPackEnv();
     }else if (PackFlg == 2) {
+        ui->textEdit->append("打包中请等待 请勿关闭，执行完成后会输出相关打包结果");
         emit SetPkWorking();
     }
 
@@ -168,8 +203,8 @@ void MainWindow::on_pushButton_OpenFile_clicked()
     //打开待打包目录
     FilePath = QFileDialog::getOpenFileName(this,
                  tr("打开待打包文件"),
-                 "D:/",
-                 tr("所有文件(*.*);;待打包文件(*.exe)"));
+                 OpenLastPath,
+                 tr("待打包文件(*.exe)"));
     //显示文件信息
     ui->lineEdit_FilePath->setText(FilePath);
 
@@ -182,6 +217,12 @@ void MainWindow::on_pushButton_OpenFile_clicked()
     QString name = FileIno.fileName();
     QString CompleteName = FileIno.completeBaseName();
 
+    //更新上次打开的文件路径
+    OpenLastPath = FileIno.absolutePath();
+    write_ini("Config",
+              "Lastpath",
+              OpenLastPath);
+
     QDateTime current_time = QDateTime::currentDateTime();
     QString currentTime = current_time.toString("_yyyyMMdd_hhmm_ss");
     currentTime = "0_PkPrg/Res_"+CompleteName+currentTime;
@@ -191,6 +232,7 @@ void MainWindow::on_pushButton_OpenFile_clicked()
     QDir dir(NewFilePath); // 注意
     if(dir.exists())
     {
+        ui->textEdit->append("路径已存在 清删除重复路径或等待1min，自动路径包含min信息");
         qDebug()<<"路径已存在"<<NewFilePath;
         return;
     }else{
@@ -204,9 +246,12 @@ void MainWindow::on_pushButton_OpenFile_clicked()
     ui->textEdit->append("已复制待打包程序至：");
     ui->textEdit->append(NewFilePath);
     File.close();
-}
 
-void MainWindow::on_pushButton_Pack_clicked()
+    if (AutoPackFlg.compare("0") != 0) {
+        PackPrgDeal();
+    }
+}
+void MainWindow::PackPrgDeal()
 {
     PackFlg= 0;
     if (ui->lineEdit_FilePath->text().isEmpty()) {
@@ -225,6 +270,10 @@ void MainWindow::on_pushButton_Pack_clicked()
     PackFlg= 1;
     CmdWrite(CmdJumpPath);
 }
+void MainWindow::on_pushButton_Pack_clicked()
+{
+    PackPrgDeal();
+}
 
 void MainWindow::PackSetEnv()
 {
@@ -237,10 +286,6 @@ void MainWindow::PackWorking()
 {
     QFileInfo FileIno(NewFilePath);
     QString Name = FileIno.fileName();//获取文件路径
-
-    ui->textEdit->append("打包中请等待 请勿关闭，执行完成后会输出相关打包结果");
-//    ui->textEdit->append("PackFlg");
-
     QString PackCmd;
     PackCmd = "windeployqt.exe "+Name;
     CmdWrite(PackCmd);
@@ -269,4 +314,20 @@ void MainWindow::read_ini(QString section, QString node, QString &dst_name)
     str.append("/");
     str.append(node);
     dst_name = iniread.value(str).toString();
+}
+
+
+void MainWindow::on_radioButton_clicked()
+{
+    if (ui->radioButton->isChecked()) {
+        AutoPackFlg = "1";
+        ui->pushButton_Pack->setEnabled(false);
+    }else {
+        AutoPackFlg = "0";
+        ui->pushButton_Pack->setEnabled(true);
+    }
+
+    write_ini("Config",
+              "AutoPack",
+              AutoPackFlg);
 }
