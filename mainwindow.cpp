@@ -11,6 +11,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowIcon(QIcon("APP.ico"));//设置应用程序图标
+
+    QLabel *per3 = new QLabel("V1.00", this);
+    statusBar()->addPermanentWidget(per3);
+
     /* 新建process */
     process = new QProcess(this);
     process->setProcessChannelMode(QProcess::MergedChannels);
@@ -33,12 +37,17 @@ MainWindow::MainWindow(QWidget *parent) :
               "AutoPack",
               AutoPackFlg);
 
+    read_ini("Config",
+              "QtCmdBatPath",
+              OpenLastPathQtBat);
+
     qDebug()<<"AutoPackFlg"<<AutoPackFlg;
     //自动打包时，关闭打包按钮
     if (AutoPackFlg.compare("0")==0) {
         ui->pushButton_Pack->setEnabled(true);
     }else if (AutoPackFlg.compare("1")==0){
         ui->pushButton_Pack->setEnabled(false);
+        ui->radioButton->setChecked(1);
     }else{
         AutoPackFlg = "0";
         ui->pushButton_Pack->setEnabled(true);
@@ -46,6 +55,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (OpenLastPath.isEmpty()) {
         OpenLastPath = "D:/";
+    }
+    if (OpenLastPathQtBat.isEmpty()) {
+        OpenLastPathQtBat = "D:/";
     }
 
     //
@@ -55,11 +67,16 @@ MainWindow::MainWindow(QWidget *parent) :
                   "Lastpath",
                   OpenLastPath);
         write_ini("Config",
+                  "QtCmdBatPath",
+                  OpenLastPathQtBat);
+
+        AutoPackFlg = "0";
+        write_ini("Config",
                   "AutoPack",
-                  "0");
+                  AutoPackFlg);
 
         str1 = "D:\\Qt\\Qt5.12.7\\5.12.7\\mingw73_32\\bin";
-        str2 = "D:/Qt/Qt5.12.7/Tools/mingw730_32\bin";
+        str2 = "D:/Qt/Qt5.12.7/Tools/mingw730_32/bin";
         write_ini("Env",
                   "Env1",
                   str1);
@@ -205,6 +222,9 @@ void MainWindow::on_pushButton_OpenFile_clicked()
                  tr("打开待打包文件"),
                  OpenLastPath,
                  tr("待打包文件(*.exe)"));
+    if (FilePath.isEmpty()) {
+        return;
+    }
     //显示文件信息
     ui->lineEdit_FilePath->setText(FilePath);
 
@@ -330,4 +350,65 @@ void MainWindow::on_radioButton_clicked()
     write_ini("Config",
               "AutoPack",
               AutoPackFlg);
+}
+
+void MainWindow::on_pushButton_OpenQTcmd_clicked()
+{
+    QString FilePath =  QFileDialog::getOpenFileName(this,
+                         tr("QT 批处理文件"),
+                         OpenLastPathQtBat,
+                         tr("QT 批处理文件(*.bat)"));
+
+    write_ini("Config",
+              "QtCmdBatPath",
+              FilePath);
+
+    QFile BatFile(FilePath);
+
+    if ( !BatFile.open(QIODevice::ReadWrite | QIODevice::Text) ) {
+        qDebug()<<"打开文件失败";
+        ui->textEdit->append("QT 批处理文件 打开失败");
+        return;
+    }
+
+    QString BatFileLine;
+
+    while( !BatFile.atEnd() )
+    {
+        BatFileLine = BatFile.readLine();
+        qDebug()<<"BatFileLine"<<BatFileLine;
+        QString TmpJudgment;
+        TmpJudgment = BatFileLine.left(3);
+        if (TmpJudgment.compare("set")==0) {
+            //判断有效数据位置
+            QString str1,str2;
+            int Tmp1,Tmp2,Tmp3;
+
+            Tmp1 = BatFileLine.indexOf("=");
+            Tmp2 = BatFileLine.indexOf(";");
+            Tmp3 = BatFileLine.lastIndexOf(";");
+            qDebug()<<Tmp1<<"-"<<Tmp2<<"-"<<Tmp3;
+
+            str1 = BatFileLine.mid(Tmp1+1,Tmp2-Tmp1-1);
+            qDebug()<<"Str1:"<<str1;
+            str2 = BatFileLine.mid(Tmp2+1,Tmp3-Tmp2-1);
+            str2.replace("\\", "/");
+            qDebug()<<"Str2:"<<str2;
+
+
+            write_ini("Env",
+                      "Env1",
+                      str1);
+            write_ini("Env",
+                      "Env2",
+                      str2);
+
+            ui->lineEdit_EnvPath1->setText(str1);
+            ui->lineEdit_EnvPath2->setText(str2);
+
+            break;
+        }
+    }
+
+     BatFile.close();
 }

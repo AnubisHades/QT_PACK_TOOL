@@ -42,6 +42,7 @@ public:
     int PackFlg = 0;
     QString AutoPackFlg = 0;
     QString OpenLastPath;
+    QString OpenLastPathQtBat;
 
     //path为ini配置文件路径，info为写入内容，dst_name为取出结果
     QString CfgIniPath;
@@ -71,6 +72,8 @@ private slots:
     void on_pushButton_OpenFile_clicked();
     void on_pushButton_Pack_clicked();
     void on_radioButton_clicked();
+    void on_pushButton_OpenQTcmd_clicked();
+
 };
 
 #endif // MAINWINDOW_H
