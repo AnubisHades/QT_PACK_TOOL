@@ -1,0 +1,2 @@
+# QT_PACK_TOOL
+简化QT CMD打包步骤
